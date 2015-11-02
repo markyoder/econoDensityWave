@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import scipy
 import math
 import os
+import sys
+
+if sys.version_info.major==3: xrange=range
 
 class Plotter(object):
 	plt.ion()
@@ -96,11 +99,11 @@ class Plotter(object):
 		# cols are indeces for [x, f(x)]
 		#print type(data0[0]).__name__
 		if type(data0[0]).__name__ in ['list', 'tuple']:
-			print 'list or tuple'
+			print ('list or tuple')
 			data=data0	
 		if type(data0[0]).__name__ in ['float', 'float64', 'float32'] or type(data0[0]).__name__ == 'int':
 			# mock up a 2xN array with indeces as x vals:
-			#print 'float or int'
+			#
 			data=[]
 			for i in xrange(len(data0)):
 				data+=[[i, data0[i]]]
