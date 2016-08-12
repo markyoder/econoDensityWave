@@ -235,143 +235,9 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 	myplot.updateLineData([phi], [-11], 1, Yrange, False)
 	myplot.updateLineData(ballx, bally, 2, Yrange, True)
 	myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
-
-def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	# production script:
-	# this just like movie2, but use the "find minY" algorithm to move the ball around.
-	#
-	if not os.path.isdir(imagesdir): os.makedirs(imagesdir)
-	fignum=0
-	B=B0
-	#plt.figure(fignum)
-	#plt.ion()
-	myplot=Plotter(B, fignum)
-	#
-	# set up:
-	phiRes=100
 	
-	X=scipy.array(range(10001))	# steps per period/cycle.
-	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
-	x0=-8.
-	xmax=8.
-	stableballcolor='g'
-	metaballcolor='r'
-	fX=X*(xmax-x0)/float(len(X)-1)+x0
-	#
-	phi=fX[0]	# assume we run phi through the full range of fX
-	iframe=0
-	indexString0=''
-	indexlen=2+int(math.log10(4+phiRes*(1+B/2)))
-	for i in range(indexlen):
-		indexString0+='0'
-	#	
-	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
-	Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['go', '']]
-	# and we know we want 3 lines, so let's define them here:
-	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
-	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
-	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
-	myplot.lines+=myplot.ax.plot([], [], 'r^', label='Cycle time', ms=10)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=stableballcolor, label=lbls[0], ms=15)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=metaballcolor, label=lbls[1], ms=15)
-	myplot.ax.legend(loc='upper right', numpoints=1)
-	#
-	Yrange=[-(B+2), 80]
-	ballPixSize=2.1 
-	ballIndex=int(len(fX)/2)	# start it in the middle...
-	#
-	# once through:
-	while phi<fX[-1]:
-		lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
-		Y=lY[0]
-		minY=lY[1]	# actually [x,Ymin]
-		#
-		# and using ball rolling algorithm:
-		#def rollBall(self, ballxIndex=0, Yvals, lright=None):
-		ballIndex=myplot.rollBall(ballIndex, Y)
-		ballpos=[fX[ballIndex], Y[ballIndex]+ballPixSize]
-		#
-		# meta-unstable?
-		# meta-unstable?
-		if (ballpos[1]-ballPixSize)>(minY[1]):
-			if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
-		else:
-			if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_mfc(stableballcolor)		#
-		Yphi=[0]
-		Xphi=[phi]
-		#
-		#myplot.updateData(fX, Y, [], B, phi)
-		# updateData2(self, X, Ys=[], Ysprams=[], B=0, phi=0, yrange=[], dosave=False)
-		# myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2] ], Yprams, B, phi, [-12, 80])
-		# updateLineData(self, X, Y, linenum=0, yRange=[], doDraw=True)
-		myplot.updateLineData(fX, Y, 0, Yrange, False)
-		myplot.updateLineData([phi], [-B0], 1, Yrange, False)
-		#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)		# draw "ball" at min. location
-		myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
-		myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
-		#
-		if dosave:
-			indexString="%s%s" % (indexString0, str(iframe))
-			indexString=indexString[-indexlen:]
-			fnamebase='%s/dwaveFrame' % imagesdir
-			fname='%s-%s.png' % (fnamebase, indexString)
-			fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
-			myplot.fig.savefig(fname)
-			os.system('convert %s %s' % (fname, fnamejpg))
-		
-		#
-		phi+=(xmax-x0)/float(phiRes)
-		
-		iframe+=1
-	#
-	# and for other B values:
-	#phiRes=25
-	while B>0:
-		phi=fX[0]
-		while phi<fX[-1]:
-			lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
-			Y=lY[0]
-			minY=lY[1]	# actually [x,Ymin]
-			#
-			ballIndex=myplot.rollBall(ballIndex, Y)
-			ballpos=[fX[ballIndex], Y[ballIndex]+ballPixSize]
-			#
-			# meta-unstable?
-			if (ballpos[1]-ballPixSize)>(minY[1]):
-				if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
-			else:
-				if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_markerfacecolor(stableballcolor)
-			
-		#
-			Yphi=[0]
-			Xphi=[phi]
-			#myplot.updateData2(fX, Y, [], B, phi)
-			#myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2]], Yprams, B, phi, [-12, 80])
-			myplot.updateLineData(fX, Y, 0, Yrange, False)
-			myplot.updateLineData([phi], [-B0], 1, Yrange, False)
-			#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)
-			myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
-			myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
-			#
-			if dosave:
-				indexString="%s%s" % (indexString0, str(iframe))
-				indexString=indexString[-indexlen:]
-				fnamebase='%s/dwaveFrame' % imagesdir
-				fname='%s-%s.png' % (fnamebase, indexString)
-				fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
-				myplot.fig.savefig(fname)
-				os.system('convert %s %s' % (fname, fnamejpg))
-			#
-			phi+=(xmax-x0)/float(phiRes)
-		
-			iframe+=1
-		if B>2:
-			B-=2
-		else:
-			B-=.5
-		
-	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
-	return None
+	return fX
+
 #
 # development and practice bits:
 
@@ -610,6 +476,143 @@ def practiceBits(B=10, phi0=0):
 ####################################################
 ####################################################
 #
+def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
+	# production script:
+	# this just like movie2, but use the "find minY" algorithm to move the ball around.
+	#
+	if not os.path.isdir(imagesdir): os.makedirs(imagesdir)
+	fignum=0
+	B=B0
+	#plt.figure(fignum)
+	#plt.ion()
+	myplot=Plotter(B, fignum)
+	#
+	# set up:
+	phiRes=100
+	
+	X=scipy.array(range(10001))	# steps per period/cycle.
+	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
+	x0=-8.
+	xmax=8.
+	stableballcolor='g'
+	metaballcolor='r'
+	fX=X*(xmax-x0)/float(len(X)-1)+x0
+	#
+	phi=fX[0]	# assume we run phi through the full range of fX
+	iframe=0
+	indexString0=''
+	indexlen=2+int(math.log10(4+phiRes*(1+B/2)))
+	for i in range(indexlen):
+		indexString0+='0'
+	#	
+	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
+	Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['go', '']]
+	# and we know we want 3 lines, so let's define them here:
+	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
+	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
+	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
+	myplot.lines+=myplot.ax.plot([], [], 'r^', label='Cycle time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=stableballcolor, label=lbls[0], ms=15)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=metaballcolor, label=lbls[1], ms=15)
+	myplot.ax.legend(loc='upper right', numpoints=1)
+	#
+	Yrange=[-(B+2), 80]
+	ballPixSize=2.1 
+	ballIndex=int(len(fX)/2)	# start it in the middle...
+	#
+	# once through:
+	while phi<fX[-1]:
+		lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
+		Y=lY[0]
+		minY=lY[1]	# actually [x,Ymin]
+		#
+		# and using ball rolling algorithm:
+		#def rollBall(self, ballxIndex=0, Yvals, lright=None):
+		ballIndex=myplot.rollBall(ballIndex, Y)
+		ballpos=[fX[ballIndex], Y[ballIndex]+ballPixSize]
+		#
+		# meta-unstable?
+		# meta-unstable?
+		if (ballpos[1]-ballPixSize)>(minY[1]):
+			if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
+		else:
+			if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_mfc(stableballcolor)		#
+		Yphi=[0]
+		Xphi=[phi]
+		#
+		#myplot.updateData(fX, Y, [], B, phi)
+		# updateData2(self, X, Ys=[], Ysprams=[], B=0, phi=0, yrange=[], dosave=False)
+		# myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2] ], Yprams, B, phi, [-12, 80])
+		# updateLineData(self, X, Y, linenum=0, yRange=[], doDraw=True)
+		myplot.updateLineData(fX, Y, 0, Yrange, False)
+		myplot.updateLineData([phi], [-B0], 1, Yrange, False)
+		#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)		# draw "ball" at min. location
+		myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
+		myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
+		#
+		if dosave:
+			indexString="%s%s" % (indexString0, str(iframe))
+			indexString=indexString[-indexlen:]
+			fnamebase='%s/dwaveFrame' % imagesdir
+			fname='%s-%s.png' % (fnamebase, indexString)
+			fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
+			myplot.fig.savefig(fname)
+			os.system('convert %s %s' % (fname, fnamejpg))
+		
+		#
+		phi+=(xmax-x0)/float(phiRes)
+		
+		iframe+=1
+	#
+	# and for other B values:
+	#phiRes=25
+	while B>0:
+		phi=fX[0]
+		while phi<fX[-1]:
+			lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
+			Y=lY[0]
+			minY=lY[1]	# actually [x,Ymin]
+			#
+			ballIndex=myplot.rollBall(ballIndex, Y)
+			ballpos=[fX[ballIndex], Y[ballIndex]+ballPixSize]
+			#
+			# meta-unstable?
+			if (ballpos[1]-ballPixSize)>(minY[1]):
+				if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
+			else:
+				if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_markerfacecolor(stableballcolor)
+			
+		#
+			Yphi=[0]
+			Xphi=[phi]
+			#myplot.updateData2(fX, Y, [], B, phi)
+			#myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2]], Yprams, B, phi, [-12, 80])
+			myplot.updateLineData(fX, Y, 0, Yrange, False)
+			myplot.updateLineData([phi], [-B0], 1, Yrange, False)
+			#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)
+			myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
+			myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
+			#
+			if dosave:
+				indexString="%s%s" % (indexString0, str(iframe))
+				indexString=indexString[-indexlen:]
+				fnamebase='%s/dwaveFrame' % imagesdir
+				fname='%s-%s.png' % (fnamebase, indexString)
+				fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
+				myplot.fig.savefig(fname)
+				os.system('convert %s %s' % (fname, fnamejpg))
+			#
+			phi+=(xmax-x0)/float(phiRes)
+		
+			iframe+=1
+		if B>2:
+			B-=2
+		else:
+			B-=.5
+		
+	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
+	return None
+#
 def johnsstilframes(out_path='stills'):
 	# another version of still frames for john.
 	# TODO: this is pretty micro-scripted. generalize the script, loop over params, etc.
@@ -640,13 +643,13 @@ def johnsstilframes(out_path='stills'):
 
 def johnsMovies(dosave=False):
 	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(10, dosave, 'imagesEq', ['Locked fault', 'Meta-stable fault'], 'dwaveEq.avi')
-	doDwaveMovie(10, dosave, 'imagesEcon', ['Stable asset value', 'Meta-stable asset value'], 'dwaveEcon.avi')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Meta-stable fault'], movieName='dwaveEq.avi')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Meta-stable asset value'], movieName='dwaveEcon.avi')
 
 ###########################
 
 	
-	return fX
+
 
 if __name__=='__main__':
 	pass
