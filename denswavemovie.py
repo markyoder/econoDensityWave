@@ -1,3 +1,14 @@
+'''
+#econo-DensityWave:
+# density wave simulations.
+# This needs some tuning. there are two working scripts at the end that will produce a bunch of still figs and maybe even a movie.
+# This is supposed to produce a real-time movie in the matplotlib qt window -- and i think it worked under earlier versions of
+# Python 2.x, but does not seem to be working in Anaconda Python 3.x.
+#
+# for images, see two scripts at the end of this module; see the syntax for the mencoder script as well. note also that
+# mencoder seems to be a library a bit in flux, so there might be a bit more Google in the future of this as well.
+'''
+#
 import matplotlib.pyplot as plt
 import scipy
 import math
@@ -10,7 +21,7 @@ class Plotter(object):
 	plt.ion()
 
 	#def __init__(self, start, stop, beta, bigev=[]):
-	def __init__(self, B=1, fignum=1, Xrange=None, nlines=1):
+	def __init__(self, B=1, fignum=1, range=None, nlines=1):
 		#self.start = start
 		#self.stop  = stop
 
@@ -21,7 +32,7 @@ class Plotter(object):
 		#self.line1 = self.ax.plot( [], [], '-r', label='fdw')[0]
 		#self.line2 = self.ax.plot( [], [], 'ob', label='ball')[0]
 		self.lines=[]
-		#for i in xrange(nlines):
+		#for i in range(nlines):
 			#self.lines+=[self.ax.plot( [], [], '-r', label='fdw')[0]]
 		self.ax.legend(loc='upper center', numpoints=1)
 		
@@ -47,8 +58,7 @@ class Plotter(object):
 			self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 			#self.ax.legend(loc='upper center', numpoints=1)
 		#
-		#print "len(Ys): %d" % len(Ys)
-		for i in xrange(len(self.lines)):
+		for i in range(len(self.lines)):
 			self.lines[i].set_data(X[i], Ys[i])
 			
 		#
@@ -97,19 +107,19 @@ class Plotter(object):
 	def getMaxMin(self, data0=[], cols=[0,1]):
 		# data: 2D list. use map(operator.itemgetter(n), list) if necessary.
 		# cols are indeces for [x, f(x)]
-		#print type(data0[0]).__name__
+		#
 		if type(data0[0]).__name__ in ['list', 'tuple']:
-			print ('list or tuple')
+			print('list or tuple')
 			data=data0	
 		if type(data0[0]).__name__ in ['float', 'float64', 'float32'] or type(data0[0]).__name__ == 'int':
 			# mock up a 2xN array with indeces as x vals:
 			#
 			data=[]
-			for i in xrange(len(data0)):
+			for i in range(len(data0)):
 				data+=[[i, data0[i]]]
 			#
 		#
-		#print data[0]
+		#
 		maxmin=[[data[0][0], data[0][1]], [data[0][0], data[0][1]]]
 		for rw in data:
 			if rw[1]<maxmin[0][1]: maxmin[0]=rw	# min.
@@ -139,15 +149,16 @@ def fdw(B=10,x=0,phi=0):
 	return A*x**2 + B*math.cos(x + phi)
 
 def fdwlist(B=10., X=None, phi=0):
-	if type(X[0]).__name__=='int':
-		for i in xrange(len(X)):
-			X[i]=float(X[i])
+	#if type(X[0]).__name__=='int':
+	if isinstance(X[0],int):
+		X = [float(x) for x in X]
+		#for i in range(len(X)):
+		#	X[i]=float(X[i])
 	#
 	Y=[]
 	minY=None
 	for x in X:
 		Y+=[fdw(B, x, phi)]
-		#print "huh? %f, %s" % (Y[-1], minY)
 		if minY==None:
 			minY=[x, Y[0]]
 		elif Y[-1]<minY[1]:
@@ -201,7 +212,7 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 	elif type(ballpos).__name__=='list':
 		# specify the range...
 		inds=[0, len(fX)-1]	# indeces range
-		for i in xrange(len(fX)):
+		for i in range(len(fX)):
 			x=fX[i]
 			if x<ballpos[0]: inds[0]=i
 			if x<ballpos[1]: inds[1]=i
@@ -228,7 +239,8 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
 	# production script:
 	# this just like movie2, but use the "find minY" algorithm to move the ball around.
-	
+	#
+	if not os.path.isdir(imagesdir): os.makedirs(imagesdir)
 	fignum=0
 	B=B0
 	#plt.figure(fignum)
@@ -250,7 +262,7 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	iframe=0
 	indexString0=''
 	indexlen=2+int(math.log10(4+phiRes*(1+B/2)))
-	for i in xrange(indexlen):
+	for i in range(indexlen):
 		indexString0+='0'
 	#	
 	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
@@ -360,43 +372,11 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		
 	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
 	return None
-
-def johnsstilframes():
-	# another version of still frames for john.
-	fnum=0
-	# dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
-	fnamebase='stillframe'
-	#
-	dwaveFrames(10, 2., [-7,-3], fnum, [-13, 75])
-	plt.savefig('stills/%s00.png' % fnamebase)
-	os.system('convert stills/%s00.png stills/%s00.jpg' % (fnamebase, fnamebase))
-	#
-	dwaveFrames(10, 0., [-7,7], fnum, [-13, 75])
-	plt.savefig('stills/%s01.png' % fnamebase)
-	os.system('convert stills/%s01.png stills/%s01.jpg' % (fnamebase, fnamebase))
-	#
-	dwaveFrames(10, -2., 'left', fnum, [-13, 75])
-	plt.savefig('stills/%s02.png' % fnamebase)
-	os.system('convert stills/%s02.png stills/%s02.jpg' % (fnamebase, fnamebase))
-	#
-	dwaveFrames(10, 2., 'right', fnum, [-13, 75])
-	plt.savefig('stills/%s03.png' % fnamebase)
-	os.system('convert stills/%s03.png stills/%s03.jpg' % (fnamebase, fnamebase))
-	#
-	dwaveFrames(1., 2., None, fnum, [-13, 75])
-	plt.savefig('stills/%s04.png' % fnamebase)
-	os.system('convert stills/%s04.png stills/%s04.jpg' % (fnamebase, fnamebase))	
-
-def johnsMovies(dosave=False):
-	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(10, dosave, 'imagesEq', ['Locked fault', 'Meta-stable fault'], 'dwaveEq.avi')
-	doDwaveMovie(10, dosave, 'imagesEcon', ['Stable asset value', 'Meta-stable asset value'], 'dwaveEcon.avi')
-
-###########################
+#
 # development and practice bits:
 
-def doDwaveMovie1(B=10, dosave=False):
-	fignum=0
+def doDwaveMovie1(B=10, fignum=0, dosave=False):
+	#fignum=0
 	#plt.figure(fignum)
 	#plt.ion()
 	myplot=Plotter(B, fignum)
@@ -414,7 +394,7 @@ def doDwaveMovie1(B=10, dosave=False):
 	iframe=0
 	indexString0=''
 	indexlen=2+int(math.log10(4+phiRes*(1+B/2)))
-	for i in xrange(indexlen):
+	for i in range(indexlen):
 		indexString0+='0'
 	#	
 	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
@@ -435,8 +415,10 @@ def doDwaveMovie1(B=10, dosave=False):
 		#myplot.updateData(fX, Y, [], B, phi)
 		# updateData2(self, X, Ys=[], Ysprams=[], B=0, phi=0, yrange=[], dosave=False)
 		myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2] ], Yprams, B, phi, [-12, 80])
+		plt.draw()
 		#
 		if dosave:
+		#if not foutname is None:
 			indexString="%s%s" % (indexString0, str(iframe))
 			indexString=indexString[-indexlen:]
 			fnamebase='images1/dwaveFrame'
@@ -465,6 +447,7 @@ def doDwaveMovie1(B=10, dosave=False):
 			myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2]], Yprams, B, phi, [-12, 80])
 			#
 			if dosave:
+			#if not foutname is None:
 				indexString="%s%s" % (indexString0, str(iframe))
 				indexString=indexString[-indexlen:]
 				fnamebase='images1/dwaveFrame'
@@ -481,7 +464,11 @@ def doDwaveMovie1(B=10, dosave=False):
 		else:
 			B-=.5
 		
-	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/images1/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi')
+	if dosave:
+	#if not foutname is None:
+		#os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/images1/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi')
+		f_path = os.path.join(os.getcwd(), 'images_b', '*.jpg')
+		os.system(os.system('mencoder mf://{} -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi'.format(f_path)))
 	return None
 
 
@@ -504,7 +491,7 @@ def doDwaveMovie2(B=10, dosave=False):
 	iframe=0
 	indexString0=''
 	indexlen=2+int(math.log10(4+phiRes*(1+B/2)))
-	for i in xrange(indexlen):
+	for i in range(indexlen):
 		indexString0+='0'
 	#	
 	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
@@ -587,7 +574,12 @@ def doDwaveMovie2(B=10, dosave=False):
 		else:
 			B-=.5
 		
-	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/images1/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi')
+	#if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/images1/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi')
+	#
+	if dosave:
+		pth = os.path.join(os.getcwd(), 'images1')
+		pth = os.path.join(pth, '*.jpg')
+		os.system('mencoder mf://{} -mf w=800:h=600:fps=10:type=jpg -ovc copy -o econoDwaveMovie.avi'.format(pth))
 	return None
 	
 	
@@ -615,7 +607,48 @@ def practiceBits(B=10, phi0=0):
 	plt.plot(fX, Y3)
 	#
 	
+####################################################
+####################################################
+#
+def johnsstilframes(out_path='stills'):
+	# another version of still frames for john.
+	# TODO: this is pretty micro-scripted. generalize the script, loop over params, etc.
+	fnum=0
+	# dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
+	fnamebase='stillframe'
+	if not os.path.isdir(out_path): os.makedirs(out_path)
+	#
+	dwaveFrames(10, 2., [-7,-3], fnum, [-13, 75])
+	plt.savefig('stills/%s00.png' % fnamebase)
+	os.system('convert stills/%s00.png stills/%s00.jpg' % (fnamebase, fnamebase))
+	#
+	dwaveFrames(10, 0., [-7,7], fnum, [-13, 75])
+	plt.savefig('stills/%s01.png' % fnamebase)
+	os.system('convert stills/%s01.png stills/%s01.jpg' % (fnamebase, fnamebase))
+	#
+	dwaveFrames(10, -2., 'left', fnum, [-13, 75])
+	plt.savefig('stills/%s02.png' % fnamebase)
+	os.system('convert stills/%s02.png stills/%s02.jpg' % (fnamebase, fnamebase))
+	#
+	dwaveFrames(10, 2., 'right', fnum, [-13, 75])
+	plt.savefig('stills/%s03.png' % fnamebase)
+	os.system('convert stills/%s03.png stills/%s03.jpg' % (fnamebase, fnamebase))
+	#
+	dwaveFrames(1., 2., None, fnum, [-13, 75])
+	plt.savefig('stills/%s04.png' % fnamebase)
+	os.system('convert stills/%s04.png stills/%s04.jpg' % (fnamebase, fnamebase))	
+
+def johnsMovies(dosave=False):
+	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
+	doDwaveMovie(10, dosave, 'imagesEq', ['Locked fault', 'Meta-stable fault'], 'dwaveEq.avi')
+	doDwaveMovie(10, dosave, 'imagesEcon', ['Stable asset value', 'Meta-stable asset value'], 'dwaveEcon.avi')
+
+###########################
 
 	
 	return fX
-	
+
+if __name__=='__main__':
+	pass
+else:
+	plt.ion()
