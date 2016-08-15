@@ -10,10 +10,13 @@
 '''
 #
 import matplotlib.pyplot as plt
-import scipy
+#import scipy
+import numpy
 import math
 import os
 import sys
+
+from matplotlib import animation
 
 if sys.version_info.major==3: xrange=range
 
@@ -106,13 +109,13 @@ class Plotter(object):
 	
 	def getMaxMin(self, data0=[], cols=[0,1]):
 		# data: 2D list. use map(operator.itemgetter(n), list) if necessary.
-		# cols are indeces for [x, f(x)]
+		# cols are indices for [x, f(x)]
 		#
 		if type(data0[0]).__name__ in ['list', 'tuple']:
 			print('list or tuple')
 			data=data0	
 		if type(data0[0]).__name__ in ['float', 'float64', 'float32'] or type(data0[0]).__name__ == 'int':
-			# mock up a 2xN array with indeces as x vals:
+			# mock up a 2xN array with indices as x vals:
 			#
 			data=[]
 			for i in range(len(data0)):
@@ -159,7 +162,7 @@ def fdwlist(B=10., X=None, phi=0):
 	minY=None
 	for x in X:
 		Y+=[fdw(B, x, phi)]
-		if minY==None:
+		if minY is None:
 			minY=[x, Y[0]]
 		elif Y[-1]<minY[1]:
 			minY=[x, Y[-1]]
@@ -169,20 +172,27 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 	# just custom script this one.
 	# make some dwave frames for john:
 	# set up some constants, objects, and working values:
-	fignum=0
-	#B=10.
+	#
+	# also, movie scripts (so far) don't use this script; only "stills" does. if we return the lines array,
+	# can we use it with an animator?
+	#
+	fignum=fignum
+	#
 	if Yrange==None: Yrange=[-(B+2), 80]
 	ballPixSize=2.1
 	myplot=Plotter(B, fignum)
 	#phi=0.
-	X=scipy.array(range(1000))
+	X=numpy.array(range(1000))
 	x0=-8
 	xmax=8
 	fX=X*(xmax-x0)/float(len(X)-1)+x0	# array of float x values
 	#
+	#cyc_time_marker='^'
+	cyc_time_marker=''
+	#
 	myplot.setCanvas([fX[0], fX[-1]], Yrange)
 	myplot.lines+=myplot.ax.plot([], [], '-b', lw=2)
-	myplot.lines+=myplot.ax.plot([], [], 'r^', label='Cycle time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], color='r', marker=cyc_time_marker, label='Cycle time', ms=10)
 	myplot.lines+=myplot.ax.plot([], [], 'go', ms=15)
 	#
 	lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
@@ -249,8 +259,10 @@ def doDwaveMovie1(B=10, fignum=0, dosave=False):
 	#
 	# set up:
 	phiRes=100
+	#cyc_time_marker='^'
+	cyc_time_marker=''
 	
-	X=scipy.array(range(1001))	# 100 steps per period/cycle.
+	X=numpy.array(range(1001))	# 100 steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
 	xmax=8.
@@ -263,8 +275,8 @@ def doDwaveMovie1(B=10, fignum=0, dosave=False):
 	for i in range(indexlen):
 		indexString0+='0'
 	#	
-	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
-	Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['go', '']]
+	#Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['gv', '']]
+	Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['go', '']]
 	# and we know we want 3 lines, so let's define them here:
 	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 	
@@ -346,8 +358,10 @@ def doDwaveMovie2(B=10, dosave=False):
 	#
 	# set up:
 	phiRes=100
+	#cyc_time_marker='^'
+	cyc_time_marker=''
 	
-	X=scipy.array(range(1001))	# 100 steps per period/cycle.
+	X=numpy.array(range(1001))	# 100 steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
 	xmax=8.
@@ -360,13 +374,13 @@ def doDwaveMovie2(B=10, dosave=False):
 	for i in range(indexlen):
 		indexString0+='0'
 	#	
-	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
-	Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['go', '']]
+	#Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['gv', '']]
+	Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['go', '']]
 	# and we know we want 3 lines, so let's define them here:
 	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
-	myplot.lines+=myplot.ax.plot([], [], 'r^', label='time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], 'r{}'.format(cyc_time_marker), label='time', ms=10)
 	myplot.lines+=myplot.ax.plot([], [], 'o', color='g', ms=15)
 	myplot.ax.legend(loc='best', numpoints=1)
 	#
@@ -456,7 +470,7 @@ def practiceBits(B=10, phi0=0):
 	#plt.ion()
 	#
 	# set up:
-	X=scipy.array(range(101))	# 100 steps per period/cycle.
+	X=numpy.array(range(101))	# 100 steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
 	xmax=8.
@@ -489,13 +503,15 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	#
 	# set up:
 	phiRes=100
+	cyc_time_marker='^'
+	cyc_time_marker=''
 	
-	X=scipy.array(range(10001))	# steps per period/cycle.
+	X=numpy.array(range(10001))	# steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
 	xmax=8.
-	stableballcolor='g'
-	metaballcolor='r'
+	stable_ball_color='g'
+	meta_ball_color='r'
 	fX=X*(xmax-x0)/float(len(X)-1)+x0
 	#
 	phi=fX[0]	# assume we run phi through the full range of fX
@@ -505,15 +521,15 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	for i in range(indexlen):
 		indexString0+='0'
 	#	
-	#Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['gv', '']]
-	Yprams=[['-b', 'FDW(x,t)'], ['r^', 'time'], ['go', '']]
+	#Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['gv', '']]
+	Yprams=[['-b', 'FDW(x,t)'], ['r{}'.format(cyc_time_marker), 'time'], ['go', '']]
 	# and we know we want 3 lines, so let's define them here:
 	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
-	myplot.lines+=myplot.ax.plot([], [], 'r^', label='Cycle time', ms=10)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=stableballcolor, label=lbls[0], ms=15)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=metaballcolor, label=lbls[1], ms=15)
+	myplot.lines+=myplot.ax.plot([], [], 'r{}'.format(cyc_time_marker), label='Cycle time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[0], ms=15)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[1], ms=15)
 	myplot.ax.legend(loc='upper right', numpoints=1)
 	#
 	Yrange=[-(B+2), 80]
@@ -534,9 +550,9 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		# meta-unstable?
 		# meta-unstable?
 		if (ballpos[1]-ballPixSize)>(minY[1]):
-			if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
+			if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
 		else:
-			if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_mfc(stableballcolor)		#
+			if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_mfc(stable_ball_color)		#
 		Yphi=[0]
 		Xphi=[phi]
 		#
@@ -578,9 +594,9 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 			#
 			# meta-unstable?
 			if (ballpos[1]-ballPixSize)>(minY[1]):
-				if myplot.lines[2].get_mfc()!=metaballcolor: myplot.lines[2].set_markerfacecolor(metaballcolor)
+				if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
 			else:
-				if myplot.lines[2].get_mfc()!=stableballcolor: myplot.lines[2].set_markerfacecolor(stableballcolor)
+				if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_markerfacecolor(stable_ball_color)
 			
 		#
 			Yphi=[0]
@@ -610,7 +626,12 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		else:
 			B-=.5
 		
-	if dosave: os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
+	if dosave:
+		try:
+			os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
+		except:
+			print('mencoder not installed or mencoder call not correct. you should still be able to compile your movie from stills.')
+			
 	return None
 #
 def johnsstilframes(out_path='stills'):
@@ -643,8 +664,8 @@ def johnsstilframes(out_path='stills'):
 
 def johnsMovies(dosave=False):
 	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Meta-stable fault'], movieName='dwaveEq.avi')
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Meta-stable asset value'], movieName='dwaveEcon.avi')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi')
 
 ###########################
 
