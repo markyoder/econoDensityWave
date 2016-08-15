@@ -8,6 +8,8 @@ license: BSD
 Please feel free to use and modify this, but keep the above information. Thanks!
 """
 
+
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation

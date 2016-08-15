@@ -189,6 +189,8 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 	#
 	#cyc_time_marker='^'
 	cyc_time_marker=''
+	#cyc_time_label='Cycle time'
+	cyc_time_label = ''
 	#
 	myplot.setCanvas([fX[0], fX[-1]], Yrange)
 	myplot.lines+=myplot.ax.plot([], [], '-b', lw=2)
@@ -511,13 +513,21 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	cyc_time_marker=''
 	#cyc_time_label = 'Cycle time'
 	cyc_time_label = ''
+	cyc_time_color = 'r'
 	
 	X=numpy.array(range(10001))	# steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
-	xmax=8.
-	stable_ball_color='g'
+	# original xmax:
+	#xmax=8.
+	# working xmax:
+	xmax=6
+	#
+	stable_ball_color='b'
 	meta_ball_color='r'
+	ball_scatter_size = 100
+	ball_lw = 2.5
+	#
 	fX=X*(xmax-x0)/float(len(X)-1)+x0
 	#
 	phi=fX[0]	# assume we run phi through the full range of fX
@@ -533,9 +543,16 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
-	myplot.lines+=myplot.ax.plot([], [], 'r{}'.format(cyc_time_marker), label=cyc_time_label, ms=10)
+	myplot.lines+=myplot.ax.plot([], [], color=cyc_time_color, marker=cyc_time_marker, label=cyc_time_label, ms=10)
+	#
 	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[0], ms=15)
 	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[1], ms=15)
+	#
+	# this is how to draw the points using scatter(), and we can have hollow circles. BUT, this does not add to the plt.lines[] object,
+	# so we'll have to rewrite the code that updates them... later.
+	#myplot.lines+=myplot.ax.scatter([], [], marker='o', s=ball_scatter_size, lw=ball_lw, color=stable_ball_color, label=lbls[0], ms=15)
+	#myplot.lines+=myplot.ax.scatter([], [], marker='o', s=ball_scatter_size, lw=ball_lw, color=meta_ball_color,   label=lbls[1], ms=15)
+	#
 	myplot.ax.legend(loc='upper right', numpoints=1)
 	#
 	Yrange=[-(B+2), 80]
@@ -557,6 +574,7 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		# meta-unstable?
 		if (ballpos[1]-ballPixSize)>(minY[1]):
 			if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
+			#if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
 		else:
 			if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_mfc(stable_ball_color)		#
 		Yphi=[0]

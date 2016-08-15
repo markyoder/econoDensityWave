@@ -1,3 +1,4 @@
+'''
  Current Folder: INBOX   	Sign Out
 Compose   Addresses   Folders   Options   Search   Help   	SquirrelMail
 
@@ -8,6 +9,7 @@ Date:   	Fri, August 27, 2010 1:58 pm
 To:   	yoder@physics.ucdavis.edu
 Priority:   	Normal
 Options:   	View Full Header |  View Printable Version  | Download this as a file
+'''
 
 import matplotlib.pyplot as plt
 
@@ -287,6 +289,4 @@ if __name__ == '__main__':
     sys.exit(main())
 
 
-Attachments:
-signature.asc 	0.2 k  	[ application/pgp-signature ] 	OpenPGP digital signature	 Download
 
