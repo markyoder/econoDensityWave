@@ -192,7 +192,7 @@ def dwaveFrames(B=10., phi=0., ballpos=None, fignum=0, Yrange=None):
 	#
 	myplot.setCanvas([fX[0], fX[-1]], Yrange)
 	myplot.lines+=myplot.ax.plot([], [], '-b', lw=2)
-	myplot.lines+=myplot.ax.plot([], [], color='r', marker=cyc_time_marker, label='Cycle time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], color='r', marker=cyc_time_marker, label=cyc_time_label, ms=10)
 	myplot.lines+=myplot.ax.plot([], [], 'go', ms=15)
 	#
 	lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
@@ -261,6 +261,8 @@ def doDwaveMovie1(B=10, fignum=0, dosave=False):
 	phiRes=100
 	#cyc_time_marker='^'
 	cyc_time_marker=''
+	#cyc_time_label = 'Cycle time'
+	cyc_time_label = ''
 	
 	X=numpy.array(range(1001))	# 100 steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
@@ -360,6 +362,8 @@ def doDwaveMovie2(B=10, dosave=False):
 	phiRes=100
 	#cyc_time_marker='^'
 	cyc_time_marker=''
+	#cyc_time_label = 'Cycle time'
+	cyc_time_label = ''
 	
 	X=numpy.array(range(1001))	# 100 steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
@@ -490,7 +494,7 @@ def practiceBits(B=10, phi0=0):
 ####################################################
 ####################################################
 #
-def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
+def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi',x_label='Deficit', y_label='Potential'):
 	# production script:
 	# this just like movie2, but use the "find minY" algorithm to move the ball around.
 	#
@@ -505,6 +509,8 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	phiRes=100
 	cyc_time_marker='^'
 	cyc_time_marker=''
+	#cyc_time_label = 'Cycle time'
+	cyc_time_label = ''
 	
 	X=numpy.array(range(10001))	# steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
@@ -527,7 +533,7 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	# self.lines+=self.ax.plot( [], [], Ysprams[newindex][0], label=Ysprams[newindex][1])
 	myplot.setCanvas([fX[0], fX[-1]], [-B-2, 80])
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
-	myplot.lines+=myplot.ax.plot([], [], 'r{}'.format(cyc_time_marker), label='Cycle time', ms=10)
+	myplot.lines+=myplot.ax.plot([], [], 'r{}'.format(cyc_time_marker), label=cyc_time_label, ms=10)
 	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[0], ms=15)
 	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[1], ms=15)
 	myplot.ax.legend(loc='upper right', numpoints=1)
@@ -565,6 +571,9 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)		# draw "ball" at min. location
 		myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
 		myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
+		#
+		myplot.ax.set_xlabel(x_label)
+		myplot.ax.set_ylabel(y_label)
 		#
 		if dosave:
 			indexString="%s%s" % (indexString0, str(iframe))
@@ -664,8 +673,8 @@ def johnsstilframes(out_path='stills'):
 
 def johnsMovies(dosave=False):
 	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi')
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi', x_label='Deficit in Slip', y_label='Potential Energy')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi', x_label='Deficit in Equity (Leverage)', y_label='Asset Values')
 
 ###########################
 
