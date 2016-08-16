@@ -24,11 +24,11 @@ class Plotter(object):
 	plt.ion()
 
 	#def __init__(self, start, stop, beta, bigev=[]):
-	def __init__(self, B=1, fignum=1, range=None, nlines=1):
+	def __init__(self, B=1, fignum=1, range=None, nlines=1, figsize=(5,4) ):
 		#self.start = start
 		#self.stop  = stop
 
-		self.fig = plt.figure(fignum)
+		self.fig = plt.figure(fignum, figsize=figsize)
 		self.fig.clf()
 		self.ax  = self.fig.add_subplot(111)
 		self.ax.set_title('B/A = %s, time=0' % B)
@@ -496,7 +496,7 @@ def practiceBits(B=10, phi0=0):
 ####################################################
 ####################################################
 #
-def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi',x_label='Deficit', y_label='Potential'):
+def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi',x_label='Deficit', y_label='Potential', figsize=(4,3)):
 	# production script:
 	# this just like movie2, but use the "find minY" algorithm to move the ball around.
 	#
@@ -505,7 +505,7 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	B=B0
 	#plt.figure(fignum)
 	#plt.ion()
-	myplot=Plotter(B, fignum)
+	myplot=Plotter(B, fignum, figsize=figsize)
 	#
 	# set up:
 	phiRes=100
@@ -691,8 +691,8 @@ def johnsstilframes(out_path='stills'):
 
 def johnsMovies(dosave=False):
 	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi', x_label='Deficit in Slip', y_label='Potential Energy')
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi', x_label='Deficit in Equity (Leverage)', y_label='Asset Values')
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi', x_label='Deficit in Slip', y_label='Potential Energy', figsize=(6,4.5) )
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi', x_label='Deficit in Equity (Leverage)', y_label='Asset Values',figsize=(6,4.5))
 
 ###########################
 
