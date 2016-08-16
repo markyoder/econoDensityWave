@@ -24,7 +24,7 @@ class Plotter(object):
 	plt.ion()
 
 	#def __init__(self, start, stop, beta, bigev=[]):
-	def __init__(self, B=1, fignum=1, range=None, nlines=1, figsize=(5,4) ):
+	def __init__(self, B=1, fignum=1, range=None, nlines=1, figsize=(5,4), legend_font_size=10 ):
 		#self.start = start
 		#self.stop  = stop
 
@@ -37,7 +37,7 @@ class Plotter(object):
 		self.lines=[]
 		#for i in range(nlines):
 			#self.lines+=[self.ax.plot( [], [], '-r', label='fdw')[0]]
-		self.ax.legend(loc='upper center', numpoints=1)
+		self.ax.legend(loc='upper center', numpoints=1, fontsize=legend_font_size)
 		
 
 		#for event in bigev:
@@ -496,26 +496,31 @@ def practiceBits(B=10, phi0=0):
 ####################################################
 ####################################################
 #
-def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi',x_label='Deficit', y_label='Potential', figsize=(4,3)):
+def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi',x_label='Deficit', y_label='Potential', figsize=(4,3), legend_font_size=10, save_jpeg=False):
 	# production script:
 	# this just like movie2, but use the "find minY" algorithm to move the ball around.
+	#
+	# yoder: but get rid of the changinf B value (JBR was right...).
 	#
 	if not os.path.isdir(imagesdir): os.makedirs(imagesdir)
 	fignum=0
 	B=B0
 	#plt.figure(fignum)
 	#plt.ion()
-	myplot=Plotter(B, fignum, figsize=figsize)
+	myplot=Plotter(B, fignum, figsize=figsize, legend_font_size=legend_font_size)
 	#
 	# set up:
-	phiRes=100
+	phiRes = 50            # "phi resolution". i think what i've done here is, in a convoluted way, set this up so that X has much
+	#                      # higher resolution than we actually use, mainly for evaluating whether the ball is in a basin or not (i think).
+	#                      # problem is, i think this gives us some odd behaviors when the ball is near the bottom of a basin, but not quite
+	#                      # there; it looks meta-stable... which we can call a fluctuation if we want...
 	cyc_time_marker='^'
 	cyc_time_marker=''
 	#cyc_time_label = 'Cycle time'
 	cyc_time_label = ''
 	cyc_time_color = 'r'
 	
-	X=numpy.array(range(10001))	# steps per period/cycle.
+	#X=numpy.array(range(10001))	# steps per period/cycle.
 	# because of the quadratic term, the function is not periodic, so we are not limited to dX=2pi. +/-2pi is pretty nice, +/-10 or so is nicely illustrative.
 	x0=-8.
 	# original xmax:
@@ -528,7 +533,8 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	ball_scatter_size = 100
 	ball_lw = 2.5
 	#
-	fX=X*(xmax-x0)/float(len(X)-1)+x0
+	#fX=X*((xmax-x0)/float(len(X)-1))+x0		# or next time, just use numpy.linspace()
+	fX = numpy.linspace(x0, xmax, 10000)
 	#
 	phi=fX[0]	# assume we run phi through the full range of fX
 	iframe=0
@@ -545,8 +551,8 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
 	myplot.lines+=myplot.ax.plot([], [], color=cyc_time_color, marker=cyc_time_marker, label=cyc_time_label, ms=10)
 	#
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[0], ms=15)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[1], ms=15)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[1], ms=15, zorder=2)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[0], ms=15, zorder=5)
 	#
 	# this is how to draw the points using scatter(), and we can have hollow circles. BUT, this does not add to the plt.lines[] object,
 	# so we'll have to rewrite the code that updates them... later.
@@ -560,7 +566,9 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	ballIndex=int(len(fX)/2)	# start it in the middle...
 	#
 	# once through:
+	k=0
 	while phi<fX[-1]:
+		k+=1
 		lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
 		Y=lY[0]
 		minY=lY[1]	# actually [x,Ymin]
@@ -572,13 +580,24 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		#
 		# meta-unstable?
 		# meta-unstable?
+		#if k<10: print('ball color data: ', k, ballpos[1],min(Y),  (ballpos[1]-ballPixSize)>(minY[1]),  ballPixSize)
 		if (ballpos[1]-ballPixSize)>(minY[1]):
-			if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
+		#if (ballpos[1]>min(Y)):
+			#if k<10: print('setting color: ', meta_ball_color)
+			#myplot.lines[2].set_markerfacecolor(meta_ball_color)
+			myplot.lines[2].set_markerfacecolor(meta_ball_color)
+			#
+			# are we seeing the other ball?
+			#myplot.lines[3].set_markerfacecolor(meta_ball_color)
+			#
+			#if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
 			#if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
 		else:
-			if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_mfc(stable_ball_color)		#
-		Yphi=[0]
-		Xphi=[phi]
+			#if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_mfc(stable_ball_color)		#
+			myplot.lines[2].set_markerfacecolor(stable_ball_color)		#
+			#myplot.lines[3].set_markerfacecolor(stable_ball_color)		#
+		#Yphi=[0]
+		#Xphi=[phi]
 		#
 		#myplot.updateData(fX, Y, [], B, phi)
 		# updateData2(self, X, Ys=[], Ysprams=[], B=0, phi=0, yrange=[], dosave=False)
@@ -587,7 +606,10 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		myplot.updateLineData(fX, Y, 0, Yrange, False)
 		myplot.updateLineData([phi], [-B0], 1, Yrange, False)
 		#myplot.updateLineData([minY[0]], [minY[1]+ballPixSize], 2, Yrange, True)		# draw "ball" at min. location
+		
+		#print('***DEBUG: ', [ballpos[0]], [ballpos[1]], 2, Yrange, True)
 		myplot.updateLineData([ballpos[0]], [ballpos[1]], 2, Yrange, True)
+		#myplot.updateLineData([ballpos[0]], [ballpos[1]], 3, Yrange, True)
 		myplot.ax.set_title('$B/A = %f$, $time=%f$' % (B, phi))
 		#
 		myplot.ax.set_xlabel(x_label)
@@ -598,9 +620,10 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 			indexString=indexString[-indexlen:]
 			fnamebase='%s/dwaveFrame' % imagesdir
 			fname='%s-%s.png' % (fnamebase, indexString)
-			fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
 			myplot.fig.savefig(fname)
-			os.system('convert %s %s' % (fname, fnamejpg))
+			if save_jpeg:
+				fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
+				os.system('convert %s %s' % (fname, fnamejpg))
 		
 		#
 		phi+=(xmax-x0)/float(phiRes)
@@ -609,25 +632,31 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	#
 	# and for other B values:
 	#phiRes=25
-	while B>0:
+	# yoder:
+	#while B>0:
+	while False:
 		phi=fX[0]
 		while phi<fX[-1]:
 			lY=fdwlist(B, fX, phi)	# list returned by fdwlist(): [Yvals{list}, Ymin{list: [x,y]}]
 			Y=lY[0]
 			minY=lY[1]	# actually [x,Ymin]
+			x_min_Y, min_Y = lY[1]
 			#
 			ballIndex=myplot.rollBall(ballIndex, Y)
 			ballpos=[fX[ballIndex], Y[ballIndex]+ballPixSize]
 			#
 			# meta-unstable?
-			if (ballpos[1]-ballPixSize)>(minY[1]):
-				if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
+			#if (ballpos[1]-ballPixSize)>(minY[1]):
+			if ballpos[1] > (min_Y):
+				#if myplot.lines[2].get_mfc()!=meta_ball_color: myplot.lines[2].set_markerfacecolor(meta_ball_color)
+				myplot.lines[2].set_markerfacecolor(meta_ball_color)
 			else:
-				if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_markerfacecolor(stable_ball_color)
+				#if myplot.lines[2].get_mfc()!=stable_ball_color: myplot.lines[2].set_markerfacecolor(stable_ball_color)
+				myplot.lines[2].set_markerfacecolor(stable_ball_color)
 			
 		#
-			Yphi=[0]
-			Xphi=[phi]
+			#Yphi=[0]
+			#Xphi=[phi]
 			#myplot.updateData2(fX, Y, [], B, phi)
 			#myplot.updateData2([fX, Xphi, [minY[0]] ], [Y, Yphi, [minY[1]+2]], Yprams, B, phi, [-12, 80])
 			myplot.updateLineData(fX, Y, 0, Yrange, False)
@@ -641,9 +670,10 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 				indexString=indexString[-indexlen:]
 				fnamebase='%s/dwaveFrame' % imagesdir
 				fname='%s-%s.png' % (fnamebase, indexString)
-				fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
 				myplot.fig.savefig(fname)
-				os.system('convert %s %s' % (fname, fnamejpg))
+				if save_jpeg:
+					fnamejpg='%s-%s.jpg' % (fnamebase, indexString)
+					os.system('convert %s %s' % (fname, fnamejpg))
 			#
 			phi+=(xmax-x0)/float(phiRes)
 		
@@ -653,7 +683,7 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 		else:
 			B-=.5
 		
-	if dosave:
+	if dosave and False:
 		try:
 			os.system('mencoder mf:///home/myoder/Documents/Research/Rundle/econoPhysics/econoDensityWave/%s/*.jpg -mf w=800:h=600:fps=10:type=jpg -ovc copy -o %s/%s'% (imagesdir, imagesdir, movieName))
 		except:
@@ -689,10 +719,10 @@ def johnsstilframes(out_path='stills'):
 	plt.savefig('stills/%s04.png' % fnamebase)
 	os.system('convert stills/%s04.png stills/%s04.jpg' % (fnamebase, fnamebase))	
 
-def johnsMovies(dosave=False):
+def johnsMovies(dosave=True,figsize=(6,5), legend_font_size=10):
 	# def doDwaveMovie3(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwavemovie1.avi'):
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi', x_label='Deficit in Slip', y_label='Potential Energy', figsize=(6,4.5) )
-	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi', x_label='Deficit in Equity (Leverage)', y_label='Asset Values',figsize=(6,4.5))
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEq', lbls=['Locked fault', 'Metastable fault'], movieName='dwaveEq.avi', x_label='Deficit in Slip', y_label='Potential Energy', figsize=figsize, legend_font_size=legend_font_size )
+	doDwaveMovie(B0=10, dosave=dosave, imagesdir='imagesEcon', lbls=['Stable asset value', 'Metastable asset value'], movieName='dwaveEcon.avi', x_label='Deficit in Equity (Leverage)', y_label='Asset Values',figsize=figsize, legend_font_size=legend_font_size)
 
 ###########################
 
