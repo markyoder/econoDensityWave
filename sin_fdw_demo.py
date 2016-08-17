@@ -8,18 +8,28 @@ license: BSD
 Please feel free to use and modify this, but keep the above information. Thanks!
 """
 
+
+
 import numpy as np
-numpy=np
+numpy = np
 from matplotlib import pyplot as plt
 from matplotlib import animation
-#import math
 
-#plt.ion()
-# First set up the figure, the axis, and the plot element we want to animate
+n_points=1000
+B=10.
+phi=0.
+
+'''
 fig = plt.figure()
 ax = plt.axes(xlim=(0, 2), ylim=(-2, 2))
-line, = ax.plot([], [], lw=2)
+line, = ax.plot([], [], lw=2)	
 
+anim = animation.FuncAnimation(fig, animate, init_func=init, frames=200, interval=20, blit=True)
+plt.show()
+'''
+#plt.ion()
+#
+#
 # initialization function: plot the background of each frame
 def init():
     line.set_data([], [])
@@ -27,24 +37,25 @@ def init():
 
 # animation function.  This is called sequentially
 def animate(i):
-    x = np.linspace(0, 2, 1000)
+    x = np.linspace(0, 2, n_points)
+    #
+    #f_active = lambda x: numpy
+    #
+    t = 2 * np.pi * (x - 0.01 * i)
     #y = np.sin(2 * np.pi * (x - 0.01 * i))
-    
-    #x = np.linspace(0., numpy.pi*2.0,1000)
-    #y = fdw(B=10, phi=0., x=x)
-    
-    A=1.0
-    B=10.
-    phi=0.
-    
-    # A*x**2 + B*numpy.cos(x + phi)
-    y=A*(x-.01*i)**2 + B*numpy.cos(2.*np.pi*(x-.01*i) + phi)
-    
+    #y = f_active(t)
+    y = fdw(t, B=B, phi=phi)
+    #
     line.set_data(x, y)
     return line,
 
-def fdw(B=10,x=0,phi=0):
-	A=1
+def f_active(x):
+	return numpy.sin(x)
+
+def fdw(x=0,phi=0,B=10):
+	A=1.
+	#B=10.
+	#phi=0.
 	# nominally, phi=v*t, but ultimately is the phase of the cos part of the system.
 	# A always =1; effectively, B -> B/A.
 	return A*x**2 + B*numpy.cos(x + phi)
@@ -66,6 +77,16 @@ def do_it():
 	plt.show()
 
 if __name__=='__main__':
-	do_it()
+	#do_it()
+	
+	fig = plt.figure()
+	ax = plt.axes(xlim=(-5, 5), ylim=(-(B+2), B+2))
+	line, = ax.plot([], [], lw=2)	
+
+	anim = animation.FuncAnimation(fig, animate, init_func=init, frames=200, interval=20, blit=True)
+	plt.show()
+	
+#
+
 else:
 	plt.ion()
