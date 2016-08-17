@@ -551,8 +551,8 @@ def doDwaveMovie(B0=10, dosave=False, imagesdir='images1', lbls=['Stable asset v
 	myplot.lines+=myplot.ax.plot([], [], '-', lw=2, color='b')
 	myplot.lines+=myplot.ax.plot([], [], color=cyc_time_color, marker=cyc_time_marker, label=cyc_time_label, ms=10)
 	#
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[1], ms=15, zorder=2)
-	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[0], ms=15, zorder=5)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=stable_ball_color, label=lbls[0], ms=15, zorder=2)
+	myplot.lines+=myplot.ax.plot([], [], 'o', color=meta_ball_color, label=lbls[1], ms=15, zorder=5)
 	#
 	# this is how to draw the points using scatter(), and we can have hollow circles. BUT, this does not add to the plt.lines[] object,
 	# so we'll have to rewrite the code that updates them... later.
